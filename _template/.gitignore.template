@@ -1,0 +1,59 @@
+# ===========================================
+# .gitignore for AI Orchestrator Projects
+# ===========================================
+
+# -------------------------------------------
+# AI Orchestration (gitignore in real projects)
+# -------------------------------------------
+
+# Orchestration makefile
+ai/Makefile.ai
+
+# Tools and scripts
+ai/tools/
+
+# Agent prompts
+ai/prompts/
+
+# Reviews (generated)
+ai/reviews/
+
+# Logs
+ai/logs/
+
+# State
+ai/state.json
+
+# -------------------------------------------
+# Keep these (project-specific)
+# -------------------------------------------
+# Uncomment to track specs and decisions:
+# !ai/specs/
+# !ai/decisions/
+
+# -------------------------------------------
+# Framework docs
+# -------------------------------------------
+CLAUDE.md
+ORCHESTRATOR.md
+
+# -------------------------------------------
+# Common ignores
+# -------------------------------------------
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temp
+tmp/
+.temp/

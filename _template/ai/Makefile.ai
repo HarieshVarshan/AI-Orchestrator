@@ -1,0 +1,188 @@
+# AI Orchestrator Makefile Template
+# Usage: make -f ai/Makefile.ai <target> [ID=xxx]
+#
+# Customize this for your specific use case.
+
+SHELL := /bin/bash
+.DEFAULT_GOAL := help
+
+# Directories
+TOOLS_DIR := ai/tools
+AI_DIR := ai
+PROJECT_DIR := project
+
+# Colors
+BLUE := \033[0;34m
+GREEN := \033[0;32m
+YELLOW := \033[1;33m
+RED := \033[0;31m
+CYAN := \033[0;36m
+BOLD := \033[1m
+DIM := \033[2m
+NC := \033[0m
+
+# ============================================================================
+# Help
+# ============================================================================
+
+.PHONY: help
+help: ## Show this help
+	@echo ""
+	@echo "$(BOLD)AI Orchestrator Commands$(NC)"
+	@echo "========================"
+	@echo ""
+	@echo "$(GREEN)WORKFLOW:$(NC)"
+	@echo "  $(CYAN)run ID=xxx$(NC)              Run full workflow for a task"
+	@echo "  $(CYAN)batch IDS=\"001 002 003\"$(NC) Run multiple tasks (overnight mode)"
+	@echo "  $(CYAN)resume$(NC)                  Resume interrupted workflow"
+	@echo ""
+	@echo "$(GREEN)INDIVIDUAL STAGES:$(NC)"
+	@echo "  $(CYAN)implement ID=xxx$(NC)        Run implementation stage only"
+	@echo "  $(CYAN)review ID=xxx$(NC)           Run review stage only"
+	@echo "  $(CYAN)fix ID=xxx$(NC)              Run fix stage only"
+	@echo "  $(CYAN)test ID=xxx$(NC)             Run test stage only"
+	@echo ""
+	@echo "$(GREEN)MANAGEMENT:$(NC)"
+	@echo "  $(CYAN)new ID=xxx NAME=yyy$(NC)     Create new spec from template"
+	@echo "  $(CYAN)status$(NC)                  Show current state"
+	@echo "  $(CYAN)reset$(NC)                   Reset state to idle"
+	@echo "  $(CYAN)logs$(NC)                    Show recent logs"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(DIM)%-20s$(NC) %s\n", $$1, $$2}'
+
+# ============================================================================
+# Full Workflow
+# ============================================================================
+
+.PHONY: run
+run: ## Run full workflow for a task (ID=xxx)
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai run ID=001_task$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/workflow.sh "$(ID)"
+
+.PHONY: batch
+batch: ## Run multiple tasks in batch mode (IDS="001 002 003")
+	@if [ -z "$(IDS)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai batch IDS=\"001_task1 002_task2\"$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/batch.sh $(IDS)
+
+.PHONY: resume
+resume: ## Resume interrupted workflow
+	@$(TOOLS_DIR)/workflow.sh --resume
+
+# ============================================================================
+# Individual Stages
+# ============================================================================
+
+.PHONY: implement
+implement: ## Run implementation stage only (ID=xxx)
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai implement ID=001_task$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/run_stage.sh implement "$(ID)"
+
+.PHONY: review
+review: ## Run review stage only (ID=xxx)
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai review ID=001_task$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/run_stage.sh review "$(ID)"
+
+.PHONY: fix
+fix: ## Run fix stage only (ID=xxx)
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai fix ID=001_task$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/run_stage.sh fix "$(ID)"
+
+.PHONY: test
+test: ## Run test stage only (ID=xxx)
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai test ID=001_task$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/run_stage.sh test "$(ID)"
+
+# ============================================================================
+# Spec Management
+# ============================================================================
+
+.PHONY: new
+new: ## Create new spec from template (ID=xxx NAME=yyy)
+	@if [ -z "$(ID)" ] || [ -z "$(NAME)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai new ID=001 NAME=my_task$(NC)"; \
+		exit 1; \
+	fi
+	@mkdir -p $(AI_DIR)/specs
+	@if [ -f "$(AI_DIR)/specs/$(ID)_$(NAME).md" ]; then \
+		echo "$(YELLOW)Spec already exists: $(AI_DIR)/specs/$(ID)_$(NAME).md$(NC)"; \
+	else \
+		sed 's/{{ID}}/$(ID)/g; s/{{NAME}}/$(NAME)/g' $(AI_DIR)/specs/_TEMPLATE.md > $(AI_DIR)/specs/$(ID)_$(NAME).md; \
+		echo "$(GREEN)Created: $(AI_DIR)/specs/$(ID)_$(NAME).md$(NC)"; \
+		echo "Edit the spec, then run: make -f ai/Makefile.ai run ID=$(ID)_$(NAME)"; \
+	fi
+
+.PHONY: list
+list: ## List all specs
+	@echo "$(BLUE)Specs:$(NC)"
+	@ls -1 $(AI_DIR)/specs/*.md 2>/dev/null | grep -v _TEMPLATE || echo "  (none)"
+
+# ============================================================================
+# State Management
+# ============================================================================
+
+.PHONY: status
+status: ## Show current orchestration state
+	@echo "$(BLUE)Current State:$(NC)"
+	@if [ -f "$(AI_DIR)/state.json" ]; then \
+		cat $(AI_DIR)/state.json | python3 -m json.tool 2>/dev/null || cat $(AI_DIR)/state.json; \
+	else \
+		echo "  No active task"; \
+	fi
+
+.PHONY: reset
+reset: ## Reset orchestration state to idle
+	@echo '{"current_task": null, "stage": "idle", "started_at": null}' > $(AI_DIR)/state.json
+	@echo "$(GREEN)State reset to idle$(NC)"
+
+# ============================================================================
+# Logs
+# ============================================================================
+
+.PHONY: logs
+logs: ## Show recent logs
+	@echo "$(BLUE)Recent Logs:$(NC)"
+	@ls -lt $(AI_DIR)/logs/*.log 2>/dev/null | head -5 || echo "  (none)"
+
+.PHONY: tail-log
+tail-log: ## Tail the latest log file
+	@latest=$$(ls -t $(AI_DIR)/logs/*.log 2>/dev/null | head -1); \
+	if [ -n "$$latest" ]; then \
+		tail -f "$$latest"; \
+	else \
+		echo "No logs found"; \
+	fi
+
+# ============================================================================
+# Cleanup
+# ============================================================================
+
+.PHONY: clean
+clean: ## Clean generated files (keeps specs)
+	@rm -f $(AI_DIR)/reviews/*.md
+	@rm -f $(AI_DIR)/logs/*.log
+	@echo '{"current_task": null, "stage": "idle", "started_at": null}' > $(AI_DIR)/state.json
+	@echo "$(GREEN)Cleaned reviews and logs$(NC)"
+
+.PHONY: clean-all
+clean-all: clean ## Clean everything including specs
+	@rm -f $(AI_DIR)/specs/*.md
+	@rm -f $(AI_DIR)/decisions/*.md
+	@echo "$(YELLOW)Cleaned all files$(NC)"
