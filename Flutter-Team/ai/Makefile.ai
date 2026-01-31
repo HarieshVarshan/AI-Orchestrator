@@ -1,0 +1,428 @@
+# AI Orchestration Makefile
+# Usage: make -f ai/Makefile.ai <target> [ID=xxx]
+#
+# This file contains AI orchestration commands.
+# For Flutter commands, use the root Makefile: make <target>
+
+SHELL := /bin/bash
+.DEFAULT_GOAL := help
+
+# Directories (relative to project root)
+TOOLS_DIR := ai/tools
+AI_DIR := ai
+APP_DIR := app
+
+# Colors
+BLUE := \033[0;34m
+GREEN := \033[0;32m
+YELLOW := \033[1;33m
+RED := \033[0;31m
+CYAN := \033[0;36m
+BOLD := \033[1m
+DIM := \033[2m
+NC := \033[0m
+
+.PHONY: help
+help: ## Show this help message
+	@echo ""
+	@echo "$(BOLD)AI Orchestration Commands$(NC)"
+	@echo "========================="
+	@echo ""
+	@echo "$(DIM)Usage: make -f ai/Makefile.ai <target>$(NC)"
+	@echo ""
+	@echo "$(GREEN)SIMPLE (recommended):$(NC)"
+	@echo "  $(CYAN)start$(NC)                       Plan your app (idea → roadmap → requests)"
+	@echo "  $(CYAN)build ID=001_login$(NC)          Build a feature (auto-generates spec if needed)"
+	@echo "  $(CYAN)quick ID=001 NAME=login$(NC)     Create + build feature in one go"
+	@echo "  $(CYAN)next$(NC)                        What should I do next?"
+	@echo "  $(CYAN)fix ID=003 NAME=crash$(NC)       Quick bug fix"
+	@echo ""
+	@echo "$(YELLOW)POWER USER:$(NC)"
+	@echo "  Planning:     new-idea, plan-app, roadmap-to-requests, analyze-refs"
+	@echo "  Development:  new-request, generate-spec, new-feature, feature, fullstack"
+	@echo "  Bugs:         new-bug, bug"
+	@echo "  Review:       list-reviews, show-review, clean-reviews, release-check"
+	@echo "  State:        status, reset-state, list-sessions, latest-session"
+	@echo ""
+	@echo "$(DIM)For Flutter commands (analyze, test, apk, run): make <target>$(NC)"
+	@echo ""
+	@echo "Run 'make -f ai/Makefile.ai help-full' for complete reference."
+
+.PHONY: help-full
+help-full: ## Show full help with all commands
+	@echo "AI Orchestration - Full Reference"
+	@echo "================================="
+	@echo ""
+	@echo "Usage: make -f ai/Makefile.ai <target> [ID=xxx] [NAME=yyy]"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(BLUE)%-25s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "Examples:"
+	@echo "  make -f ai/Makefile.ai start"
+	@echo "  make -f ai/Makefile.ai build ID=001_login"
+	@echo "  make -f ai/Makefile.ai quick ID=002 NAME=profile"
+
+# =============================================================================
+# Simple Commands (Recommended)
+# =============================================================================
+
+.PHONY: start
+start: ## Plan your app (idea → roadmap → feature requests)
+	@$(TOOLS_DIR)/simple_start.sh
+
+.PHONY: build
+build: ## Build a feature (ID=xxx_yyy) - auto-generates spec if needed
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai build ID=001_login$(NC)"; \
+		echo ""; \
+		echo "This builds a feature, auto-generating the spec if only a request exists."; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/simple_build.sh $(ID)
+
+.PHONY: quick
+quick: ## Create + build feature in one go (ID=xxx NAME=yyy)
+	@if [ -z "$(ID)" ] || [ -z "$(NAME)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai quick ID=001 NAME=login$(NC)"; \
+		echo ""; \
+		echo "This creates a feature request and immediately starts building."; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/simple_quick.sh $(ID) $(NAME)
+
+.PHONY: next
+next: ## What should I do next? (smart suggestions)
+	@$(TOOLS_DIR)/simple_next.sh
+
+.PHONY: fix
+fix: ## Quick bug fix (ID=xxx NAME=yyy)
+	@if [ -z "$(ID)" ] || [ -z "$(NAME)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai fix ID=003 NAME=login_crash$(NC)"; \
+		echo ""; \
+		echo "This creates a bug spec (if needed) and runs the fix workflow."; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/simple_fix.sh $(ID) $(NAME)
+
+# =============================================================================
+# App Planning (Pre-Development)
+# =============================================================================
+
+.PHONY: new-idea
+new-idea: ## Create a new app idea file from template
+	@mkdir -p $(AI_DIR)/planning
+	@if [ -f "$(AI_DIR)/planning/app_idea.md" ]; then \
+		echo "$(YELLOW)App idea already exists: $(AI_DIR)/planning/app_idea.md$(NC)"; \
+		echo "Delete or rename it to create a new one."; \
+	else \
+		cp $(AI_DIR)/planning/_APP_IDEA_TEMPLATE.md $(AI_DIR)/planning/app_idea.md; \
+		echo "$(GREEN)Created app idea file: $(AI_DIR)/planning/app_idea.md$(NC)"; \
+		echo ""; \
+		echo "Next steps:"; \
+		echo "  1. Edit the app idea file with your concept"; \
+		echo "  2. (Optional) Add reference apps to reference/"; \
+		echo "  3. Run: make -f ai/Makefile.ai analyze-refs (if you have references)"; \
+		echo "  4. Run: make -f ai/Makefile.ai plan-app"; \
+	fi
+
+.PHONY: analyze-refs
+analyze-refs: ## Analyze reference apps/repos for features and patterns
+	@echo "$(BLUE)Analyzing reference materials...$(NC)"
+	@echo ""
+	@if [ ! -d "reference" ]; then \
+		echo "$(YELLOW)No reference/ directory found.$(NC)"; \
+		echo "Create it and add:"; \
+		echo "  - reference/repos/    - Clone similar app repos here"; \
+		echo "  - reference/apps/     - Screenshots, APK notes here"; \
+		echo "  - reference/docs/     - Research articles, design docs"; \
+		echo ""; \
+		exit 0; \
+	fi
+	@echo "Run Claude Code with the reference analyzer prompt:"
+	@echo ""
+	@echo "claude --prompt \"\$$(cat ai/prompts/analyze_references.txt)\" \\"
+	@echo "  --context \"REFERENCE_DIR=reference/\" \\"
+	@echo "  --context \"APP_IDEA_FILE=ai/planning/app_idea.md\""
+	@echo ""
+	@echo "$(GREEN)Analysis will be saved to: ai/planning/reference_analysis.md$(NC)"
+
+.PHONY: plan-app
+plan-app: ## Generate comprehensive feature roadmap from app idea
+	@echo "$(BLUE)Planning app features...$(NC)"
+	@echo ""
+	@if [ ! -f "$(AI_DIR)/planning/app_idea.md" ]; then \
+		echo "$(YELLOW)No app idea found. Run 'make -f ai/Makefile.ai new-idea' first.$(NC)"; \
+		exit 1; \
+	fi
+	@echo "Run Claude Code with the app planner prompt:"
+	@echo ""
+	@echo "claude --prompt \"\$$(cat ai/prompts/plan_app.txt)\" \\"
+	@echo "  --context \"APP_IDEA_FILE=ai/planning/app_idea.md\" \\"
+	@echo "  --context \"REFERENCE_DIR=reference/\""
+	@echo ""
+	@echo "$(GREEN)Feature roadmap will be saved to: ai/planning/feature_roadmap.md$(NC)"
+	@echo ""
+	@echo "After planning, create feature requests:"
+	@echo "  make -f ai/Makefile.ai new-request ID=001 NAME=first_feature"
+
+.PHONY: list-planning
+list-planning: ## List all planning documents
+	@echo "$(BLUE)Planning Documents:$(NC)"
+	@ls -1 $(AI_DIR)/planning/*.md 2>/dev/null | grep -v _TEMPLATE || echo "  No planning docs found"
+
+.PHONY: roadmap-to-requests
+roadmap-to-requests: ## Generate feature requests from roadmap (PRIORITY=P0/P1/P2/ALL)
+	@echo "$(BLUE)Converting roadmap to feature requests...$(NC)"
+	@echo ""
+	@if [ ! -f "$(AI_DIR)/planning/feature_roadmap.md" ]; then \
+		echo "$(YELLOW)No feature roadmap found.$(NC)"; \
+		echo "Run 'make -f ai/Makefile.ai plan-app' first to generate the roadmap."; \
+		exit 1; \
+	fi
+	@PRIO=$${PRIORITY:-P0}; \
+	echo "Run Claude Code with the roadmap-to-requests prompt:"; \
+	echo ""; \
+	echo "claude --prompt \"\$$(cat ai/prompts/roadmap_to_requests.txt)\" \\"; \
+	echo "  --context \"ROADMAP_FILE=ai/planning/feature_roadmap.md\" \\"; \
+	echo "  --context \"PRIORITY=$$PRIO\" \\"; \
+	echo "  --context \"REQUEST_TEMPLATE=ai/requests/_TEMPLATE.md\""; \
+	echo ""; \
+	echo "$(GREEN)Feature requests will be created in: ai/requests/$(NC)"; \
+	echo ""; \
+	echo "Priority options:"; \
+	echo "  PRIORITY=P0   - MVP features only (default)"; \
+	echo "  PRIORITY=P1   - MVP + Important features"; \
+	echo "  PRIORITY=ALL  - All features"
+
+# =============================================================================
+# Feature Workflow
+# =============================================================================
+
+.PHONY: new-feature
+new-feature: ## Create a new feature spec (ID=xxx NAME=yyy) - uses full template
+	@if [ -z "$(ID)" ] || [ -z "$(NAME)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai new-feature ID=001 NAME=login$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/new_feature.sh $(ID) $(NAME)
+
+.PHONY: new-request
+new-request: ## Create a simple feature request (ID=xxx NAME=yyy) - easy to fill
+	@if [ -z "$(ID)" ] || [ -z "$(NAME)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai new-request ID=001 NAME=login$(NC)"; \
+		exit 1; \
+	fi
+	@mkdir -p $(AI_DIR)/requests
+	@if [ -f "$(AI_DIR)/requests/$(ID)_$(NAME).md" ]; then \
+		echo "$(YELLOW)Request already exists: $(AI_DIR)/requests/$(ID)_$(NAME).md$(NC)"; \
+	else \
+		sed 's/{{NAME}}/$(NAME)/g' $(AI_DIR)/requests/_TEMPLATE.md > $(AI_DIR)/requests/$(ID)_$(NAME).md; \
+		echo "$(GREEN)Created simple request: $(AI_DIR)/requests/$(ID)_$(NAME).md$(NC)"; \
+		echo ""; \
+		echo "Next steps:"; \
+		echo "  1. Edit the request file with your feature description"; \
+		echo "  2. Run: make -f ai/Makefile.ai generate-spec ID=$(ID) NAME=$(NAME)"; \
+		echo "  3. Review generated spec in ai/features/"; \
+		echo "  4. Run: make -f ai/Makefile.ai feature ID=$(ID)_$(NAME)"; \
+	fi
+
+.PHONY: generate-spec
+generate-spec: ## Convert simple request to formal spec (ID=xxx NAME=yyy)
+	@if [ -z "$(ID)" ] || [ -z "$(NAME)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai generate-spec ID=001 NAME=login$(NC)"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(AI_DIR)/requests/$(ID)_$(NAME).md" ]; then \
+		echo "$(RED)Request file not found: $(AI_DIR)/requests/$(ID)_$(NAME).md$(NC)"; \
+		echo "Run 'make -f ai/Makefile.ai new-request ID=$(ID) NAME=$(NAME)' first"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Generating formal spec from request...$(NC)"
+	@echo ""
+	@echo "Run Claude Code with the spec generator prompt:"
+	@echo ""
+	@echo "claude --prompt \"\$$(cat ai/prompts/generate_feature_spec.txt)\" \\"
+	@echo "  --context \"ID=$(ID)\" \\"
+	@echo "  --context \"NAME=$(NAME)\" \\"
+	@echo "  --context \"REQUEST_FILE=ai/requests/$(ID)_$(NAME).md\""
+	@echo ""
+	@echo "$(GREEN)After generation, review: $(AI_DIR)/features/$(ID)_$(NAME).md$(NC)"
+
+.PHONY: feature
+feature: ## Run frontend-only feature workflow (ID=xxx_yyy)
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai feature ID=001_login$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/orchestrate_feature.sh $(ID)
+
+.PHONY: fullstack
+fullstack: ## Run full-stack feature workflow - backend + frontend (ID=xxx_yyy)
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai fullstack ID=001_login$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/orchestrate_fullstack.sh $(ID)
+
+.PHONY: release-check
+release-check: ## Run production readiness checks for release (ID=xxx_yyy)
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai release-check ID=001_login$(NC)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Running production readiness checks for $(ID)...$(NC)"
+	@echo ""
+	@echo "Run the following release validation reviews:"
+	@echo ""
+	@echo "1. Performance Review:"
+	@echo "   claude --prompt \"\$$(cat ai/prompts/review_performance.txt)\" --context \"ID=$(ID)\""
+	@echo ""
+	@echo "2. Accessibility Review:"
+	@echo "   claude --prompt \"\$$(cat ai/prompts/review_accessibility.txt)\" --context \"ID=$(ID)\""
+	@echo ""
+	@echo "3. Localization Review:"
+	@echo "   claude --prompt \"\$$(cat ai/prompts/review_localization.txt)\" --context \"ID=$(ID)\""
+	@echo ""
+	@echo "4. Production Checklist:"
+	@echo "   claude --prompt \"\$$(cat ai/prompts/checklist_production.txt)\" --context \"ID=$(ID)\" --context \"VERSION=\$$(cat app/pubspec.yaml | grep 'version:' | cut -d' ' -f2)\""
+	@echo ""
+	@echo "$(GREEN)Review output will be in ai/reviews/$(ID)_*.md$(NC)"
+
+.PHONY: list-features
+list-features: ## List all feature specs
+	@echo "$(BLUE)Features:$(NC)"
+	@ls -1 $(AI_DIR)/features/*.md 2>/dev/null | grep -v _TEMPLATE || echo "  No features found"
+
+# =============================================================================
+# Bug Workflow
+# =============================================================================
+
+.PHONY: new-bug
+new-bug: ## Create a new bug spec (ID=xxx NAME=yyy)
+	@if [ -z "$(ID)" ] || [ -z "$(NAME)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai new-bug ID=003 NAME=login_crash$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/new_bug.sh $(ID) $(NAME)
+
+.PHONY: bug
+bug: ## Run full bug fix workflow (ID=xxx_yyy)
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai bug ID=003_login_crash$(NC)"; \
+		exit 1; \
+	fi
+	@$(TOOLS_DIR)/orchestrate_bug.sh $(ID)
+
+.PHONY: list-bugs
+list-bugs: ## List all bug specs
+	@echo "$(BLUE)Bugs:$(NC)"
+	@ls -1 $(AI_DIR)/bugs/*.md 2>/dev/null | grep -v _TEMPLATE || echo "  No bugs found"
+
+# =============================================================================
+# Review Management
+# =============================================================================
+
+.PHONY: list-reviews
+list-reviews: ## List all review files (ID=xxx optional filter)
+	@echo "$(BLUE)Reviews:$(NC)"
+	@if [ -n "$(ID)" ]; then \
+		ls -1 $(AI_DIR)/reviews/$(ID)_*.md 2>/dev/null || echo "  No reviews for $(ID)"; \
+	else \
+		ls -1 $(AI_DIR)/reviews/*.md 2>/dev/null || echo "  No reviews found"; \
+	fi
+
+.PHONY: show-review
+show-review: ## Show all reviews for a task (ID=xxx)
+	@if [ -z "$(ID)" ]; then \
+		echo "$(YELLOW)Usage: make -f ai/Makefile.ai show-review ID=001_login$(NC)"; \
+		exit 1; \
+	fi
+	@for f in $(AI_DIR)/reviews/$(ID)_*.md; do \
+		if [ -f "$$f" ]; then \
+			echo "$(BLUE)=== $$f ===$(NC)"; \
+			cat "$$f"; \
+			echo ""; \
+		fi \
+	done
+
+.PHONY: clean-reviews
+clean-reviews: ## Remove all review files (ID=xxx for specific task)
+	@if [ -n "$(ID)" ]; then \
+		rm -f $(AI_DIR)/reviews/$(ID)_*.md; \
+		echo "Removed reviews for $(ID)"; \
+	else \
+		rm -f $(AI_DIR)/reviews/*.md; \
+		echo "Removed all reviews"; \
+	fi
+
+# =============================================================================
+# State Management
+# =============================================================================
+
+.PHONY: status
+status: ## Show current orchestration state
+	@echo "$(BLUE)Current State:$(NC)"
+	@cat $(AI_DIR)/state.json | python3 -m json.tool 2>/dev/null || cat $(AI_DIR)/state.json
+
+.PHONY: reset-state
+reset-state: ## Reset orchestration state to idle
+	@echo '{"current_task": null, "task_type": null, "stage": "idle", "last_updated": null, "history": []}' > $(AI_DIR)/state.json
+	@echo "State reset to idle"
+
+# =============================================================================
+# Session Logs
+# =============================================================================
+
+.PHONY: list-sessions
+list-sessions: ## List all session logs
+	@echo "$(BLUE)Session Logs:$(NC)"
+	@ls -1 $(AI_DIR)/session-logs/*.md 2>/dev/null || echo "  No session logs found"
+
+.PHONY: latest-session
+latest-session: ## Show latest session log
+	@latest=$$(ls -t $(AI_DIR)/session-logs/*.md 2>/dev/null | head -1); \
+	if [ -n "$$latest" ]; then \
+		cat "$$latest"; \
+	else \
+		echo "No session logs found"; \
+	fi
+
+# =============================================================================
+# Cleanup
+# =============================================================================
+
+.PHONY: clean
+clean: ## Clean generated files (keeps specs)
+	@rm -f $(AI_DIR)/reviews/*.md
+	@rm -f $(AI_DIR)/decisions/*.md
+	@rm -f $(AI_DIR)/session-logs/*.md
+	@echo '{"current_task": null, "task_type": null, "stage": "idle", "last_updated": null, "history": []}' > $(AI_DIR)/state.json
+	@echo "Cleaned generated files"
+
+.PHONY: clean-all
+clean-all: clean ## Clean everything including specs
+	@rm -f $(AI_DIR)/features/*.md
+	@rm -f $(AI_DIR)/bugs/*.md
+	@cp $(AI_DIR)/features/_TEMPLATE.md $(AI_DIR)/features/_TEMPLATE.md.bak 2>/dev/null || true
+	@cp $(AI_DIR)/bugs/_TEMPLATE.md $(AI_DIR)/bugs/_TEMPLATE.md.bak 2>/dev/null || true
+	@echo "Cleaned all files (templates preserved as .bak)"
+
+# =============================================================================
+# Template Sync
+# =============================================================================
+
+.PHONY: sync-template
+sync-template: ## Sync framework updates from template repo (URL=xxx for first time)
+	@if [ -n "$(URL)" ]; then \
+		$(TOOLS_DIR)/sync_template.sh --url $(URL); \
+	else \
+		$(TOOLS_DIR)/sync_template.sh; \
+	fi
+
+.PHONY: check-template
+check-template: ## Check for template updates without applying
+	@$(TOOLS_DIR)/sync_template.sh --check
+
+.PHONY: sync-list
+sync-list: ## List what files would be synced from template
+	@$(TOOLS_DIR)/sync_template.sh --list

@@ -1,0 +1,82 @@
+You are maintaining the changelog for a Flutter Android application.
+
+## Your Task
+Update CHANGELOG.md with the completed feature or bug fix.
+
+## Input
+- Task ID: {{ID}}
+- Task type: {{TYPE}} (feature/bugfix)
+- Specification file: {{SPEC_FILE}}
+- Version: {{VERSION}} (or "Unreleased")
+
+## Changelog Format (Keep a Changelog style)
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- New features
+
+### Changed
+- Changes in existing functionality
+
+### Deprecated
+- Soon-to-be removed features
+
+### Removed
+- Removed features
+
+### Fixed
+- Bug fixes
+
+### Security
+- Vulnerability fixes
+```
+
+## Entry Format
+Each entry should:
+- Start with a verb (Add, Fix, Change, Remove, etc.)
+- Be user-facing (describe what users see, not internal changes)
+- Be concise but complete
+- Include task ID in parentheses
+
+## Examples
+
+### For Features
+```markdown
+### Added
+- Add login screen with email/password authentication (001_login)
+- Add form validation with inline error messages (001_login)
+```
+
+### For Bug Fixes
+```markdown
+### Fixed
+- Fix crash when submitting empty login form (003_login_crash)
+- Fix password field not obscuring text on some devices (004_password_visibility)
+```
+
+### For Changes
+```markdown
+### Changed
+- Update login button to be disabled when form is invalid (001_login)
+```
+
+## Rules
+1. Only document user-visible changes
+2. Don't document internal refactoring (unless it affects behavior)
+3. Group related changes under the same task ID
+4. Keep entries concise
+5. Maintain reverse chronological order (newest first)
+6. Create [Unreleased] section if it doesn't exist
+
+## Output
+- Update CHANGELOG.md at project root
+- Add entries under appropriate section
+- Maintain existing format

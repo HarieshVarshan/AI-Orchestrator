@@ -1,0 +1,128 @@
+You are preparing a Git commit for a Flutter Android application.
+
+## Your Task
+Create a well-structured commit for the completed work.
+
+## Input
+- Task ID: {{ID}}
+- Task type: {{TYPE}} (feature/bugfix)
+- Specification file: {{SPEC_FILE}}
+
+## Commit Message Format
+```
+{{type}}: {{subject}}
+
+- {{change 1}}
+- {{change 2}}
+...
+- {{change n}}
+
+Task-ID: {{ID}}
+Signed-off-by: {{name}} <{{email}}>
+```
+
+### Type (lowercase, followed by colon)
+- `feat`: New feature
+- `fix`: Bug fix (use for bugfix tasks)
+- `chore`: Maintenance tasks, refactoring, config changes
+- `test`: Adding or updating tests only
+- `docs`: Documentation only changes
+- `style`: Formatting, linting fixes
+- `perf`: Performance improvement
+
+### Subject
+- Imperative mood ("Add" not "Added")
+- Lowercase after the colon
+- No period at end
+- Brief description of what was done
+
+### Changes List
+- Each change on its own line with `-` prefix
+- Be specific about what was changed
+- Group related changes logically
+- Include file/component names when helpful
+
+### Footer
+- `Task-ID: {{ID}}` - Always include the task ID
+- `BREAKING CHANGE:` - Add if applicable
+- `Closes #issue` - Add if fixing a tracked issue
+- `Signed-off-by:` - Developer signoff (use `git commit -s` flag)
+
+## Pre-Commit Checklist
+Verify before committing:
+- [ ] `flutter analyze` passes
+- [ ] `flutter test` passes
+- [ ] No unintended files staged
+- [ ] No secrets or credentials in code
+- [ ] No AI orchestration files staged (ai/reviews/, ai/session-logs/)
+- [ ] Code matches the specification
+
+## Files to Stage
+**DO stage:**
+- All modified files in `lib/`
+- All new/modified test files
+- Updated decision files in `ai/decisions/`
+
+**DO NOT stage:**
+- `ai/reviews/*` - Review files
+- `ai/session-logs/*` - Session logs
+- `ai/state.json` - Orchestration state
+- `.env` or any environment files
+- Spec files (they're source of truth, not generated)
+
+## Example Commit Messages
+
+### Feature Example
+```
+feat: add email/password authentication
+
+- Add LoginPage with email and password TextFields
+- Implement form validation (email format, 8-char min password)
+- Create LoginViewModel with ChangeNotifier state management
+- Add inline error messages for validation failures
+- Disable submit button when form is invalid
+
+Task-ID: 001_login
+Signed-off-by: Hariesh Varshan <hariesh@example.com>
+```
+
+### Bug Fix Example
+```
+fix: resolve crash on null user profile
+
+- Add null check in ProfileViewModel.loadUser()
+- Return empty state instead of throwing when user is null
+- Add regression test for null user scenario
+
+Task-ID: 003_profile_crash
+Signed-off-by: Hariesh Varshan <hariesh@example.com>
+```
+
+### Chore Example
+```
+chore: update dependencies and lint fixes
+
+- Upgrade flutter_bloc to 8.1.3
+- Fix deprecated API usage in AuthRepository
+- Apply dart format to all files
+
+Task-ID: 005_maintenance
+Signed-off-by: Hariesh Varshan <hariesh@example.com>
+```
+
+## Git Command
+Always use the `-s` flag to add signoff automatically:
+```bash
+git commit -s -m "commit message"
+```
+
+Or configure git to always sign off:
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+```
+
+## Output
+- Stage appropriate files (excluding ai/reviews, ai/session-logs, ai/state.json)
+- Create commit with `-s` flag for signoff
+- Output the commit SHA

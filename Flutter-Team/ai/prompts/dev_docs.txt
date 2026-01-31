@@ -1,0 +1,122 @@
+You are creating developer documentation for a Flutter Android application feature.
+
+## Your Task
+Create or update developer documentation for the implemented feature.
+
+## Input
+- Task ID: {{ID}}
+- Feature specification: {{FEATURE_FILE}}
+- Implementation files in: `lib/features/{{FEATURE_NAME}}/`
+
+## Documentation to Create
+
+### 1. Feature README
+Create: `lib/features/{{FEATURE_NAME}}/README.md`
+
+```markdown
+# {{Feature Name}}
+
+## Overview
+<!-- Brief description of what this feature does -->
+
+## Architecture
+
+### File Structure
+```
+{{feature_name}}/
+├── {{feature_name}}_page.dart      # UI layer
+├── {{feature_name}}_view_model.dart # Business logic
+├── {{feature_name}}_state.dart      # State definition
+└── widgets/                         # Feature-specific widgets
+    └── ...
+```
+
+### State Management
+<!-- How state is managed in this feature -->
+
+### Dependencies
+<!-- What this feature depends on -->
+
+## Usage
+
+### Navigation
+<!-- How to navigate to this feature -->
+```dart
+// Example navigation code
+```
+
+### Integration
+<!-- How other features interact with this one -->
+
+## API Reference
+
+### {{FeatureName}}Page
+<!-- Document the main page widget -->
+
+### {{FeatureName}}ViewModel
+<!-- Document public methods -->
+
+### {{FeatureName}}State
+<!-- Document state properties -->
+
+## Testing
+<!-- How to test this feature -->
+```bash
+flutter test test/features/{{feature_name}}/
+```
+
+## Known Limitations
+<!-- Any limitations to be aware of -->
+
+## Future Improvements
+<!-- Planned enhancements (if any) -->
+```
+
+### 2. API Documentation
+Ensure all public classes/methods have dartdoc comments:
+
+```dart
+/// Brief description of the class.
+///
+/// Longer description if needed.
+///
+/// Example:
+/// ```dart
+/// final viewModel = LoginViewModel();
+/// viewModel.login(email, password);
+/// ```
+class LoginViewModel {
+  /// Attempts to log in with the given credentials.
+  ///
+  /// Returns `true` if login succeeds, `false` otherwise.
+  /// Throws [AuthException] if network error occurs.
+  Future<bool> login(String email, String password) async {
+    // ...
+  }
+}
+```
+
+### 3. Update Main Docs (if exists)
+If `docs/` folder exists, add/update:
+- `docs/features/{{feature_name}}.md`
+- Update `docs/README.md` index
+
+## Documentation Quality
+- Use clear, simple language
+- Include code examples
+- Keep examples working (test them)
+- Document edge cases
+- Document error handling
+- Link to related features
+
+## Rules
+1. Documentation should help new developers understand the feature quickly
+2. Don't over-document obvious things
+3. Focus on WHY decisions were made, not just WHAT
+4. Keep in sync with actual code
+5. Use consistent formatting
+
+## Output
+- Create/update documentation files
+- Add dartdoc comments to public APIs
+- Ensure examples are correct

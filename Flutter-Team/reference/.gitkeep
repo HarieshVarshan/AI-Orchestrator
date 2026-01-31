@@ -1,0 +1,47 @@
+# Reference Folder
+
+This folder is for storing reference materials during development:
+- Cloned open source apps
+- Example app screenshots
+- UI/UX inspiration
+- Code snippets for learning
+- Documentation from other sources
+- Competitor app analysis
+
+## Important
+
+This folder is EXCLUDED from git tracking because:
+1. Reference materials may be copyrighted
+2. Prevents accidental commits of proprietary content
+3. Keeps the repository clean and original
+4. Cloned repos have their own .git history
+
+## Suggested Structure
+
+```
+reference/
+├── repos/              # Cloned open source repositories
+│   ├── flutter-app-1/  # Example: git clone https://github.com/user/app
+│   ├── flutter-app-2/
+│   └── README.md       # Notes on what each repo is for
+├── apps/               # Screenshots, APKs for reference
+├── docs/               # External documentation, PDFs
+├── code-snippets/      # Code examples for learning
+├── ui-inspiration/     # Design references, Figma exports
+└── notes/              # Personal notes, analysis
+```
+
+## How to Add a Cloned Repo
+
+```bash
+cd reference/repos
+git clone https://github.com/user/some-flutter-app.git
+```
+
+The cloned repo keeps its own .git history, but won't affect your project's git.
+
+## Warning
+
+Do NOT directly copy content from this folder into your app.
+Use it for learning and inspiration only.
+The Originality Reviewer will flag copied content.

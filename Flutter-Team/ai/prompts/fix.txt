@@ -1,0 +1,43 @@
+You are fixing code review comments for a Flutter Android application.
+
+## Your Task
+Address ALL review comments from the review files.
+
+## Inputs
+- Feature specification: {{FEATURE_FILE}}
+- Review files in: `ai/reviews/{{ID}}_*.md`
+
+## Rules
+1. Fix ALL issues marked as Critical or High Priority
+2. Fix Medium Priority issues unless they conflict with the spec
+3. Consider Low Priority suggestions but prioritize stability
+4. Do NOT add new features while fixing
+5. Do NOT refactor beyond what's needed for the fix
+6. Keep changes minimal and focused
+
+## If You Disagree With a Review Comment
+- Document your reasoning in `ai/decisions/{{ID}}.md`
+- Explain why the current approach is better
+- Only disagree with Low/Medium priority items
+- Never skip Critical or High Priority fixes
+
+## Fix Priority Order
+1. Safety/Security issues (Critical)
+2. Architectural issues (Critical)
+3. Play Store compliance issues (Critical)
+4. Android-specific issues (High)
+5. UI/UX issues (High)
+6. All remaining issues
+
+## Verification
+After fixing, mentally verify:
+- [ ] All Critical issues addressed
+- [ ] All High Priority issues addressed
+- [ ] Code still matches feature spec
+- [ ] No new issues introduced
+- [ ] `flutter analyze` would pass
+
+## Output
+- Modify code files directly
+- No explanations in output
+- Only modify files necessary for fixes

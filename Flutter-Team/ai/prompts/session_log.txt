@@ -1,0 +1,93 @@
+You are creating a session log for a Flutter development session.
+
+## Your Task
+Document the development session for future reference.
+
+## Input
+- Task ID: {{ID}}
+- Task type: {{TYPE}} (feature/bugfix)
+- Session date: {{DATE}}
+- All files modified during session
+- Review files generated
+- Decisions made
+
+## Session Log Format
+Create file: `ai/session-logs/{{DATE}}_{{ID}}.md`
+
+```markdown
+# Session Log: {{ID}}
+**Date**: {{DATE}}
+**Type**: {{TYPE}}
+**Duration**: (if known)
+
+## Objective
+<!-- What was the goal of this session -->
+
+## Work Completed
+
+### Implementation
+<!-- Summary of code changes -->
+- Files created:
+- Files modified:
+- Files deleted:
+
+### Testing
+<!-- Summary of test work -->
+- Tests created:
+- Tests modified:
+- Coverage notes:
+
+### Reviews Conducted
+<!-- List review files and key findings -->
+- Safety: ai/reviews/{{ID}}_safety.md
+- Architecture: ai/reviews/{{ID}}_architecture.md
+- Play Store: ai/reviews/{{ID}}_playstore.md
+- UI/UX: ai/reviews/{{ID}}_ui.md
+- Android: ai/reviews/{{ID}}_android.md
+
+### Key Review Findings
+<!-- Most important issues found and fixed -->
+1.
+2.
+3.
+
+## Decisions Made
+<!-- Link to decision files and summarize key decisions -->
+- See: ai/decisions/{{ID}}.md
+
+## Challenges Encountered
+<!-- Problems hit and how they were resolved -->
+
+## Technical Debt Introduced
+<!-- Any shortcuts taken that need future attention -->
+
+## Follow-up Items
+<!-- Things to address in future sessions -->
+- [ ]
+- [ ]
+
+## Commits
+<!-- Git commits made during session -->
+- `abc1234` - feat({{scope}}): description
+
+## Metrics
+<!-- Quantitative data if available -->
+- Lines of code added:
+- Lines of code removed:
+- Test count:
+- `flutter analyze` issues: 0
+
+## Notes
+<!-- Any other observations or learnings -->
+```
+
+## Rules
+1. Be factual, not promotional
+2. Include enough detail to understand what happened
+3. Link to all relevant files
+4. Highlight anything unusual or noteworthy
+5. Make it useful for future debugging/understanding
+
+## Output
+- Create session log file
+- Ensure all sections are filled appropriately
